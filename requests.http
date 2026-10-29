@@ -1,0 +1,169 @@
+@baseUrl = http://localhost:3000
+
+### PREPARAÇÃO: autores
+POST {{baseUrl}}/autores
+Content-Type: application/json
+
+{ "nome": "Machado de Assis" }
+
+### PREPARAÇÃO: categorias
+POST {{baseUrl}}/categorias
+Content-Type: application/json
+
+{ "nome": "Literatura" }
+
+### PREPARAÇÃO: leitores 1 a 5 (repita alterando matrícula e e-mail)
+POST {{baseUrl}}/leitores
+Content-Type: application/json
+
+{ "nome": "Ana", "matricula": "2026001", "email": "ana@escola.com" }
+
+###
+POST {{baseUrl}}/leitores
+Content-Type: application/json
+
+{ "nome": "Bruno", "matricula": "2026002", "email": "bruno@escola.com" }
+
+###
+POST {{baseUrl}}/leitores
+Content-Type: application/json
+
+{ "nome": "Carla", "matricula": "2026003", "email": "carla@escola.com" }
+
+###
+POST {{baseUrl}}/leitores
+Content-Type: application/json
+
+{ "nome": "Diego", "matricula": "2026004", "email": "diego@escola.com" }
+
+###
+POST {{baseUrl}}/leitores
+Content-Type: application/json
+
+{ "nome": "Elisa", "matricula": "2026005", "email": "elisa@escola.com" }
+
+### PREPARAÇÃO: livro com um exemplar
+POST {{baseUrl}}/livros
+Content-Type: application/json
+
+{ "titulo": "Dom Casmurro", "exemplares": 1, "autorId": 1, "categoriaId": 1 }
+
+### PREPARAÇÃO: livros para regra do limite
+POST {{baseUrl}}/livros
+Content-Type: application/json
+
+{ "titulo": "Memórias Póstumas", "exemplares": 3, "autorId": 1, "categoriaId": 1 }
+
+###
+POST {{baseUrl}}/livros
+Content-Type: application/json
+
+{ "titulo": "Quincas Borba", "exemplares": 3, "autorId": 1, "categoriaId": 1 }
+
+###
+POST {{baseUrl}}/livros
+Content-Type: application/json
+
+{ "titulo": "Esaú e Jacó", "exemplares": 3, "autorId": 1, "categoriaId": 1 }
+
+### SUCESSO: GET /autores
+GET {{baseUrl}}/autores
+
+### SUCESSO: GET /categorias
+GET {{baseUrl}}/categorias
+
+### SUCESSO: GET /livros
+GET {{baseUrl}}/livros
+
+### SUCESSO: filtros de livros
+GET {{baseUrl}}/livros?categoria=1&autor=1&disponivel=true
+
+### ERRO: filtro inválido (400)
+GET {{baseUrl}}/livros?disponivel=sim
+
+### SUCESSO: GET /livros/:id
+GET {{baseUrl}}/livros/1
+
+### ERRO: route param inválido (400)
+GET {{baseUrl}}/livros/abc
+
+### ERRO: livro inexistente (404)
+GET {{baseUrl}}/livros/999
+
+### SUCESSO: PATCH /livros/:id
+PATCH {{baseUrl}}/livros/1
+Content-Type: application/json
+
+{ "titulo": "Dom Casmurro — edição escolar" }
+
+### ERRO: autor inexistente no cadastro (404)
+POST {{baseUrl}}/livros
+Content-Type: application/json
+
+{ "titulo": "Livro inválido", "exemplares": 1, "autorId": 999, "categoriaId": 1 }
+
+### ERRO: matrícula repetida (409)
+POST {{baseUrl}}/leitores
+Content-Type: application/json
+
+{ "nome": "Ana duplicada", "matricula": "2026001", "email": "outra@escola.com" }
+
+### SUCESSO: empréstimo 1
+POST {{baseUrl}}/emprestimos
+Content-Type: application/json
+
+{ "livroId": 1, "leitorId": 1 }
+
+### R1: sem exemplar disponível (409 SEM_EXEMPLAR)
+POST {{baseUrl}}/emprestimos
+Content-Type: application/json
+
+{ "livroId": 1, "leitorId": 2 }
+
+### PREPARAÇÃO R2: segundo empréstimo aberto da leitora 1
+POST {{baseUrl}}/emprestimos
+Content-Type: application/json
+
+{ "livroId": 2, "leitorId": 1 }
+
+### PREPARAÇÃO R2: terceiro empréstimo aberto da leitora 1
+POST {{baseUrl}}/emprestimos
+Content-Type: application/json
+
+{ "livroId": 3, "leitorId": 1 }
+
+### R2: quarto empréstimo aberto (409 LIMITE_EMPRESTIMOS)
+POST {{baseUrl}}/emprestimos
+Content-Type: application/json
+
+{ "livroId": 4, "leitorId": 1 }
+
+### SUCESSO: empréstimos do leitor
+GET {{baseUrl}}/leitores/1/emprestimos
+
+### SUCESSO: apenas empréstimos abertos
+GET {{baseUrl}}/leitores/1/emprestimos?status=aberto
+
+### ERRO: leitor inexistente (404)
+GET {{baseUrl}}/leitores/999/emprestimos
+
+### SUCESSO: devolução
+PATCH {{baseUrl}}/emprestimos/1/devolucao
+
+### R5: devolução repetida (409 JA_DEVOLVIDO)
+PATCH {{baseUrl}}/emprestimos/1/devolucao
+
+### R6: excluir livro com empréstimo aberto (409)
+DELETE {{baseUrl}}/livros/2
+
+### SUCESSO: cadastrar livro que será excluído
+POST {{baseUrl}}/livros
+Content-Type: application/json
+
+{ "titulo": "Livro descartado", "exemplares": 1, "autorId": 1, "categoriaId": 1 }
+
+### SUCESSO: DELETE /livros/:id (204)
+DELETE {{baseUrl}}/livros/5
+
+### ERRO: devolução inexistente (404)
+PATCH {{baseUrl}}/emprestimos/999/devolucao
